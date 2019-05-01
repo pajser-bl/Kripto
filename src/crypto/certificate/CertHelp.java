@@ -1,8 +1,11 @@
 package crypto.certificate;
 
 import access.User;
+import crypto.hash.HashAlgorithm;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
@@ -16,6 +19,7 @@ import java.util.logging.Logger;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import org.bouncycastle.util.encoders.Base64;
 
 public class CertHelp {
 
@@ -47,10 +51,11 @@ public class CertHelp {
 
     public static void main(String args[]){
         try {
-            X509Certificate cert =(X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new FileInputStream("/home/pajser/Desktop/PrG/KIRZ_projekat/certificate_manager/newcerts/cert1.crt"));
-            List<Rdn> r=new LdapName(cert.getSubjectX500Principal().getName()).getRdns();
-            System.out.println();
-        } catch (CertificateException | FileNotFoundException | InvalidNameException ex) {
+            X509Certificate cert =(X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new FileInputStream("C:/Users/pajse/Documents/NetBeansProjects/Kripto/user_folders/korisnik5/cert/cert5.crt"));
+//            List<Rdn> r=new LdapName(cert.getSubjectX500Principal().getName()).getRdns();
+            HashAlgorithm hash=new HashAlgorithm("SHA1");
+            System.out.println(Base64.toBase64String(hash.hash(cert.getEncoded())));
+        } catch (CertificateException | FileNotFoundException | NoSuchAlgorithmException | NoSuchProviderException ex) {
             Logger.getLogger(CertHelp.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

@@ -8,24 +8,28 @@ public class User {
     private String salt;
     private String folderPath;
     private String certificatePath;
+
+    private String certificateThumbPrint;
     private String privateKeyPath;
 
-    public User(String username, String hash, String salt, String folderPath, String certificatePath, String privateKeyPath) {
+    public User(String username, String hash, String salt, String folderPath, String certificatePath, String certificateThumbPrint, String privateKeyPath) {
         this.username = username;
         this.hash = hash;
         this.salt = salt;
         this.folderPath = folderPath;
         this.certificatePath = certificatePath;
+        this.certificateThumbPrint=certificateThumbPrint;
         this.privateKeyPath = privateKeyPath;
     }
 
-    public User(int id, String username, String hash, String salt, String folderPath, String certificatePath, String privateKeyPath) {
+    public User(int id, String username, String hash, String salt, String folderPath, String certificatePath, String certificateThumbPrint, String privateKeyPath) {
         this.id = id;
         this.username = username;
         this.hash = hash;
         this.salt = salt;
         this.folderPath = folderPath;
         this.certificatePath = certificatePath;
+        this.certificateThumbPrint=certificateThumbPrint;
         this.privateKeyPath = privateKeyPath;
     }
 
@@ -85,4 +89,11 @@ public class User {
         this.privateKeyPath = privateKeyPath;
     }
 
+    public String getCertificateThumbPrint() {
+        return certificateThumbPrint;
+    }
+
+    public void setCertificateThumbPrint(String certificateThumbPrint) {
+        this.certificateThumbPrint = certificateThumbPrint;
+    }
 }

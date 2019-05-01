@@ -48,7 +48,7 @@ public class MainForm extends javax.swing.JFrame {
             UFLabel.setText("User folder: " + Kripto.user.getFolderPath());
             PKLLabel.setText("Private key location: " + Kripto.user.getPrivateKeyPath());
             CLLabel.setText("Certificate location: " + Kripto.user.getCertificatePath());
-            CLabel.setText("Country: " + r.get(0).toString());
+            CLabel.setText("Country: " + r.get(0).getValue().toString());
             SLabel.setText("State: " + r.get(1).getValue().toString());
             LLabel.setText("Location: " + r.get(2).getValue().toString());
             OLabel.setText("Organization: " + r.get(3).getValue().toString());
