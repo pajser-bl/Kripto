@@ -77,6 +77,14 @@ public class Passwd {
     public ArrayList<User> getUsers() {
         return this.users;
     }
+    
+    public String[] getUsernames(){
+        String[] usernames=new String[this.users.size()];
+        int i=0;
+        for(User user:this.users)
+            usernames[i++]=user.getUsername();
+        return usernames;
+    }
 
     public int login(String username, String password) {
         //-1 nepostoji acc
@@ -84,8 +92,8 @@ public class Passwd {
         //-3 istekao certifikat
         //-4 nije jos vazeci certifikat
         //-5 opozvan certifikat
-        //-6 promjenjen certifikat
-        // 0 los pass
+        //-6 pogresan otisak certifikata
+        // 0 pogresan password
         // 1 ok
         User user = null;
         X509Certificate cert = null;
