@@ -407,7 +407,7 @@
                       <Color blue="ff" green="ff" red="ff" type="rgb"/>
                     </Property>
                     <Property name="rows" type="int" value="5"/>
-                    <Property name="text" type="java.lang.String" value="TEST TESTTEST TESTTEST TEST&#xa;TEST TESTTEST TEST&#xa;TEST TESTTEST TEST&#xa;&#xa;&#xa;TEST TESTTEST TEST&#xa;TEST TESTTEST TEST&#xa;TEST TESTTEST TEST&#xa;TEST TESTTEST TEST&#xa;&#xa;&#xa;&#xa;TEST TESTTEST TESTTEST T&#xa;&#xa;&#xa;&#xa;&#xa;TEST TESTTEST TESTTEST T"/>
+                    <Property name="text" type="java.lang.String" value="CODE PREVIEW"/>
                   </Properties>
                 </Component>
               </SubComponents>

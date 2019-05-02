@@ -456,7 +456,7 @@ public class MainForm extends javax.swing.JFrame {
         codeTextArea.setColumns(20);
         codeTextArea.setForeground(new java.awt.Color(255, 255, 255));
         codeTextArea.setRows(5);
-        codeTextArea.setText("TEST TESTTEST TESTTEST TEST\nTEST TESTTEST TEST\nTEST TESTTEST TEST\n\n\nTEST TESTTEST TEST\nTEST TESTTEST TEST\nTEST TESTTEST TEST\nTEST TESTTEST TEST\n\n\n\nTEST TESTTEST TESTTEST T\n\n\n\n\nTEST TESTTEST TESTTEST T");
+        codeTextArea.setText("CODE PREVIEW");
         codePane.setViewportView(codeTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
