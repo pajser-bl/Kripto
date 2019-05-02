@@ -4,9 +4,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
-import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class HashAlgorithm {
@@ -16,15 +13,13 @@ public class HashAlgorithm {
      * 1. MD4
      * 2. MD5
      * 3. SHA1
-     * 4. SHA-224
-     * 5. SHA-256
-     * 6. SHA-384;
-     * 7. SHA-512
+     * 4. SHA-256
+     * 5. SHA-512
      * 
      * @return 
      */
     public static String[] getHashes(){
-        return new String[]{"MD4","MD5","SHA1","SHA-225","SHA-256","SHA-386","SHA-512"};
+        return new String[]{"MD4","MD5","SHA1","SHA-256","SHA-512"};
     }
     
     private String algorithm = "";

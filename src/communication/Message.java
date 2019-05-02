@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -112,7 +113,7 @@ public class Message {
             byte[] encrypted = cipher.encrypt(key, sourceInBytesBase64Salted);
 
             //save to file
-            String fileName = receiver.getFolderPath()+File.separator+DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(time)+".message";
+            String fileName = receiver.getFolderPath() + File.separator + DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(time) + ".message";
             PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
 
             writer.println("-----BEGIN HEADER-----");
@@ -143,12 +144,18 @@ public class Message {
 
     /**
      * Used to read encrypted file found in users folder
-     * 
+     *
      * @param file
      * @param user
-     * @return 
-    */
-    public static int read(File file, User user) {
+     * @return
+     */
+    public static String read(File file, User user) {
+        // 1:sender:time:cipher:hash OK
+        // 0:sender:time:cipher:hash bad hash
+        // -1 bad private key
+        // -2 bad format
+        // -3 exceptions
+        // -4 user is not receiver
         try {
             ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(file.getPath()));
             //format check
@@ -162,16 +169,18 @@ public class Message {
                     || !lines.get(11).equals("-----END SALT-----")
                     || !lines.get(12).equals("-----BEGIN HASH-----")
                     || !lines.get(14).equals("-----END HASH-----")) {
-                return -2;//bad format
+                return "-2";//bad format
             }
             //read message info
             String[] messageInfo = lines.get(1).split(";");
             String receiver = messageInfo[0];
             String sender = messageInfo[1];
             String time = messageInfo[2];
-            String sourceFileName = messageInfo[3];
+            String sourceFileName = user.getFolderPath() + File.separator + messageInfo[3];
 
-            //read hidden
+            if (!receiver.equals(user.getUsername())) {
+                return "-4";//user is not receiver
+            }            //read hidden
             byte[] encryptedHidden = Base64.getDecoder().decode(lines.get(4));
             RSACipher rsaCipher = new RSACipher();
             PrivateKey privateKey = RSACipher.readPrivateKey(user.getPrivateKeyPath());
@@ -198,23 +207,28 @@ public class Message {
             //hash
             String hash = lines.get(13);
             String newHash = Base64.getEncoder().encodeToString(hasher.hash(desalted));
-
-            System.out.println("To: " + receiver);
-            System.out.println("From: " + sender);
-            System.out.println("At: " + time);
-
-            System.out.println("Hash: " + hashAlgorithm);
-            System.out.println("Enc: " + symmetricCipherAlgorithm);
-            System.out.println("HASH VERIFY: " + HashAlgorithm.verify(hash, newHash));
-            System.out.println("Source:" + new String(decrypted));
+            if (!HashAlgorithm.verify(hash, newHash)) {
+                return "0;" + sender + ";" + time + ";" + cipher.getAlgorithm() + ";" + hashAlgorithm;//bad hash
+            }//            System.out.println("To: " + receiver);
+//            System.out.println("From: " + sender);
+//            System.out.println("At: " + time);
+//
+//            System.out.println("Hash: " + hashAlgorithm);
+//            System.out.println("Enc: " + symmetricCipherAlgorithm);
+//            System.out.println("HASH VERIFY: " + HashAlgorithm.verify(hash, newHash));
+//            System.out.println("Source:" + new String(decrypted));
             Files.write(new File(sourceFileName).toPath(), new String(decrypted).getBytes(), StandardOpenOption.CREATE);
-            return 1;
+            return "1;" + sender + ";" + time + ";" + cipher.getAlgorithm() + ";" + hashAlgorithm + ";" + sourceFileName;//all good
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException ex) {
+            return "-3";//file problem
+        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeySpecException | IllegalBlockSizeException |IllegalArgumentException ex) {
             Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+            return "-3";//file problem
+        } catch (InvalidKeyException | BadPaddingException ex) {
+            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+            return "-1";//bad private key
         }
-        return -1;
     }
 
     public static void main(String args[]) {
