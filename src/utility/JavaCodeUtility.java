@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.DiagnosticCollector;
@@ -48,7 +47,7 @@ public class JavaCodeUtility {
 
     public static void execute(File files[]) throws IOException {
         for (File file : files) {
-            System.out.println("java -cp "+ file.getPath().replace(file.getName(), "")+" "+file.getName().replace(".java", ""));
+            //System.out.println("java -cp "+ file.getPath().replace(file.getName(), "")+" "+file.getName().replace(".java", ""));
             Process p=Runtime.getRuntime().exec("java -cp "+ file.getPath().replace(file.getName(), "")+" "+file.getName().replace(".java", ""));
             
             output("Std.In", p.getInputStream());
