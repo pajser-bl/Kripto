@@ -5,6 +5,7 @@
  */
 package view.main;
 
+import communication.Message;
 import crypto.cipher.SymmetricCipherAlgorithm;
 import crypto.hash.HashAlgorithm;
 import java.io.File;
@@ -36,7 +37,17 @@ public class MainForm extends javax.swing.JFrame {
     static String cipher = "";
     static String hash = "";
     static int saltLength = 0;
-
+    static String recipient="";
+    
+    
+    static File messageFile=null;
+    static boolean isMessage=false;
+    static String messageCipher="";
+    static String messageHash="";
+    static int messageSaltLength=0;
+    static String sender="";
+    static int messageRead=0;
+    
     /**
      * Creates new form MainForm
      */
@@ -138,7 +149,7 @@ public class MainForm extends javax.swing.JFrame {
         codeTextArea = new javax.swing.JTextArea();
         receveMessagePanel = new javax.swing.JPanel();
         encryptedFileButton = new javax.swing.JButton();
-        encryptedFileField = new javax.swing.JTextField();
+        messagePathField = new javax.swing.JTextField();
         sourcePane = new javax.swing.JScrollPane();
         sourceTextArea = new javax.swing.JTextArea();
         senderLabel = new javax.swing.JLabel();
@@ -146,6 +157,7 @@ public class MainForm extends javax.swing.JFrame {
         compileAndRunButton = new javax.swing.JButton();
         sourceCipherLabel = new javax.swing.JLabel();
         sourceHashLabel = new javax.swing.JLabel();
+        openMessageButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Kripto");
@@ -464,25 +476,27 @@ public class MainForm extends javax.swing.JFrame {
         receveMessagePanel.setLayout(new java.awt.GridBagLayout());
 
         encryptedFileButton.setText("Choose file");
+        encryptedFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                encryptedFileButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         receveMessagePanel.add(encryptedFileButton, gridBagConstraints);
 
-        encryptedFileField.setEditable(false);
-        encryptedFileField.setText("/path");
+        messagePathField.setEditable(false);
+        messagePathField.setText("/path");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        receveMessagePanel.add(encryptedFileField, gridBagConstraints);
+        receveMessagePanel.add(messagePathField, gridBagConstraints);
 
         sourceTextArea.setEditable(false);
         sourceTextArea.setBackground(new java.awt.Color(0, 0, 0));
@@ -495,7 +509,8 @@ public class MainForm extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 16;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 19;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipadx = -238;
         gridBagConstraints.ipady = -78;
@@ -508,7 +523,7 @@ public class MainForm extends javax.swing.JFrame {
         senderLabel.setText("Sender:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -519,7 +534,7 @@ public class MainForm extends javax.swing.JFrame {
         verificationLabel.setText("Verification");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -530,9 +545,9 @@ public class MainForm extends javax.swing.JFrame {
         compileAndRunButton.setText("Compile and run");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.ipadx = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
@@ -541,7 +556,7 @@ public class MainForm extends javax.swing.JFrame {
         sourceCipherLabel.setText("Cipher:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -552,13 +567,30 @@ public class MainForm extends javax.swing.JFrame {
         sourceHashLabel.setText("Hash:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         receveMessagePanel.add(sourceHashLabel, gridBagConstraints);
+
+        openMessageButton.setText("Open");
+        openMessageButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openMessageButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
+        receveMessagePanel.add(openMessageButton, gridBagConstraints);
 
         TabbedPane.addTab("Receive", receveMessagePanel);
 
@@ -599,16 +631,34 @@ public class MainForm extends javax.swing.JFrame {
         cipher = cipherBox.getItemAt(cipherBox.getSelectedIndex());
         hash = hashBox.getItemAt(hashBox.getSelectedIndex());
         saltLength = Integer.parseInt(saltLengthBox.getItemAt(saltLengthBox.getSelectedIndex()));
-
-        if (!sourceIsJava || sourceFile.exists()) {
+        recipient=receiverBox.getItemAt(receiverBox.getSelectedIndex());
+        if (!sourceIsJava || !sourceFile.exists()) {
             JOptionPane.showMessageDialog(this,
                     "Chosen file is not a java source file!");
         }
-
-        String msg = sourceFileName + " " + sourceIsJava + " " + cipher + " " + saltLength + " " + hash;
-        System.out.println(msg);
-
+                Message.send(Kripto.user, Kripto.passwd.getUser(recipient), hash, cipher, saltLength, sourceFile);
     }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void encryptedFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptedFileButtonActionPerformed
+        JFileChooser chooser = new JFileChooser(Kripto.user.getFolderPath());
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "Enciphered message", "message");
+        chooser.setFileFilter(filter);
+        int returnVal = chooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            messagePathField.setText(chooser.getSelectedFile().getPath());
+            messageFile=chooser.getSelectedFile();
+            isMessage=messageFile.getName().endsWith(".message");
+        }
+    }//GEN-LAST:event_encryptedFileButtonActionPerformed
+
+    private void openMessageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMessageButtonActionPerformed
+        if(!isMessage||!messageFile.exists())
+            JOptionPane.showMessageDialog(this,
+                    "Chosen file is not a valid message file!");
+        messageRead=Message.read(messageFile, Kripto.user);
+        System.out.println(messageRead);
+    }//GEN-LAST:event_openMessageButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -669,10 +719,11 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JTextArea codeTextArea;
     private javax.swing.JButton compileAndRunButton;
     private javax.swing.JButton encryptedFileButton;
-    private javax.swing.JTextField encryptedFileField;
     private javax.swing.JButton fileButton;
     private javax.swing.JComboBox<String> hashBox;
     private javax.swing.JLabel hashLabel;
+    private javax.swing.JTextField messagePathField;
+    private javax.swing.JButton openMessageButton;
     private javax.swing.JTextField pathField;
     private javax.swing.JPanel profilePanel;
     private javax.swing.JComboBox<String> receiverBox;

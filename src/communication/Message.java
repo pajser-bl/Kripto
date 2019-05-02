@@ -112,7 +112,7 @@ public class Message {
             byte[] encrypted = cipher.encrypt(key, sourceInBytesBase64Salted);
 
             //save to file
-            String fileName = receiver.getFolderPath()+File.separator+DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(time);
+            String fileName = receiver.getFolderPath()+File.separator+DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(time)+".message";
             PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
 
             writer.println("-----BEGIN HEADER-----");
