@@ -391,6 +391,8 @@ public class MainForm extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         sendMessagePanel.add(receiverLabel, gridBagConstraints);
+
+        receiverBox.setModel(new javax.swing.DefaultComboBoxModel<>(Kripto.passwd.getUsernames()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;

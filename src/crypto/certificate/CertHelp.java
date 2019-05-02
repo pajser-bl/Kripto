@@ -52,10 +52,9 @@ public class CertHelp {
     public static void main(String args[]){
         try {
             X509Certificate cert =(X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new FileInputStream("C:/Users/pajse/Documents/NetBeansProjects/Kripto/user_folders/korisnik5/cert/cert5.crt"));
-//            List<Rdn> r=new LdapName(cert.getSubjectX500Principal().getName()).getRdns();
-            HashAlgorithm hash=new HashAlgorithm("SHA1");
-            System.out.println(Base64.toBase64String(hash.hash(cert.getEncoded())));
-        } catch (CertificateException | FileNotFoundException | NoSuchAlgorithmException | NoSuchProviderException ex) {
+            
+            System.out.println();
+        } catch (CertificateException | FileNotFoundException  ex) {
             Logger.getLogger(CertHelp.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
