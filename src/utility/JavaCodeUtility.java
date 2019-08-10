@@ -17,20 +17,13 @@ public class JavaCodeUtility {
 
     public static void main(String args[]) {
         try {
-            File s[] = {new File("/home/pajser/Desktop/ree.java")};
+            File s[] = {new File("C:\\Users\\pajse\\Desktop\\ree.java")};
             System.out.println(compile(s));
             System.out.println(s[0].exists());
-            //File[] e={new File("/home/pajser/NetBeansProjects/Kripto/ree.class")};
             execute(s[0]);
         } catch (IOException ex) {
             Logger.getLogger(JavaCodeUtility.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-    }
-    private File codeFile;
-    private File executableFile;
-
-    public JavaCodeUtility() {
     }
 
     public static boolean compile(File files[]) throws IOException {
@@ -49,15 +42,13 @@ public class JavaCodeUtility {
         String location = file.getPath().replace(file.getName(), "");
         String osName = System.getProperty("os.name").toLowerCase();
         String executable = file.getName().replace(".java", "");
-        
+
         if (osName.contains("linux")) {
             String command[] = {"xterm", "-hold", "-e", "java", "-cp", location, executable};
             Runtime.getRuntime().exec(command);
         } else {
-            String command[]={"start","cmd","/k","java","-cp",location,executable};
+            String command[] = {"cmd.exe", "/c", "start", "cmd.exe", "/k", "java", "-cp", location, executable.substring(0, 1).toUpperCase() + executable.substring(1)};
             Runtime.getRuntime().exec(command);
         }
-
     }
-
 }
