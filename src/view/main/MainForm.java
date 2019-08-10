@@ -726,7 +726,7 @@ public class MainForm extends javax.swing.JFrame {
                 File[] fileToCompile = {messageSourceFile};
                 JavaCodeUtility.compile(fileToCompile);
                 File[] fileToExecute = {new File(messageSourceFile.getPath().replace(".java", ""))};
-                JavaCodeUtility.execute(fileToExecute);
+                JavaCodeUtility.execute(fileToExecute[0]);
             } catch (IOException ex) {
                 Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
             }

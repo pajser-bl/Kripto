@@ -17,11 +17,11 @@ public class JavaCodeUtility {
 
     public static void main(String args[]) {
         try {
-            File[] s = {new File("/home/pajser/NetBeansProjects/Kripto/ree.java")};
+            File s[] = {new File("/home/pajser/Desktop/ree.java")};
             System.out.println(compile(s));
             System.out.println(s[0].exists());
             //File[] e={new File("/home/pajser/NetBeansProjects/Kripto/ree.class")};
-            execute(s);
+            execute(s[0]);
         } catch (IOException ex) {
             Logger.getLogger(JavaCodeUtility.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -45,21 +45,19 @@ public class JavaCodeUtility {
         return success;
     }
 
-    public static void execute(File files[]) throws IOException {
-        for (File file : files) {
-            //System.out.println("java -cp "+ file.getPath().replace(file.getName(), "")+" "+file.getName().replace(".java", ""));
-            Process p=Runtime.getRuntime().exec("java -cp "+ file.getPath().replace(file.getName(), "")+" "+file.getName().replace(".java", ""));
-            
-            output("Std.In", p.getInputStream());
-            output("Std.Out", p.getErrorStream());
+    public static void execute(File file) throws IOException {
+        String location = file.getPath().replace(file.getName(), "");
+        String osName = System.getProperty("os.name").toLowerCase();
+        String executable = file.getName().replace(".java", "");
+        
+        if (osName.contains("linux")) {
+            String command[] = {"xterm", "-hold", "-e", "java", "-cp", location, executable};
+            Runtime.getRuntime().exec(command);
+        } else {
+            String command[]={"start","cmd","/k","java","-cp",location,executable};
+            Runtime.getRuntime().exec(command);
         }
-    }
-    private static void output(String stream, InputStream in) throws IOException {      
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            System.out.println(String.format("%s: %s", stream, line));
-        }
     }
 
 }
