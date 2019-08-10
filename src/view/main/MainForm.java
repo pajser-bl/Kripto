@@ -33,7 +33,7 @@ import utility.JavaCodeUtility;
  * @author pajser
  */
 public class MainForm extends javax.swing.JFrame {
-
+    
     static String sourceFileName = "";
     static boolean sourceIsJava = false;
     static File sourceFile = null;
@@ -41,7 +41,7 @@ public class MainForm extends javax.swing.JFrame {
     static String hash = "";
     static int saltLength = 0;
     static String recipient = "";
-
+    
     static File messageFile = null;
     static File messageSourceFile = null;
     static boolean isMessage = false;
@@ -71,7 +71,7 @@ public class MainForm extends javax.swing.JFrame {
             CNLabel.setText("Common name: " + r.get(5).getValue().toString());
             EmailLabel.setText("Email: " + r.get(6).getValue().toString());
             EDLabel.setText("Expiration date: " + new SimpleDateFormat("dd-MM-yyyy").format(Kripto.userCertificate.getNotAfter().getTime()));
-
+            
             String keyUsage = "";
             if (Kripto.userCertificate.getKeyUsage()[0]) {
                 keyUsage += "Digital Signature;";
@@ -101,11 +101,11 @@ public class MainForm extends javax.swing.JFrame {
                 keyUsage += "Decipher Only;";
             }
             KULabel.setText(keyUsage);
-
+            
         } catch (InvalidNameException ex) {
             Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
     }
 
     /**
@@ -162,9 +162,14 @@ public class MainForm extends javax.swing.JFrame {
         messageHashLabel = new javax.swing.JLabel();
         messageTimeLabel = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Kripto");
         setMinimumSize(new java.awt.Dimension(300, 200));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
         getContentPane().setLayout(new java.awt.GridLayout(1, 0));
 
         profilePanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -652,7 +657,7 @@ public class MainForm extends javax.swing.JFrame {
             messagePathField.setText(chooser.getSelectedFile().getPath());
             messageFile = chooser.getSelectedFile();
             isMessage = messageFile.getName().endsWith(".message");
-
+            
             if (!isMessage || !messageFile.exists()) {
                 JOptionPane.showMessageDialog(this,
                         "Chosen file is not a valid message file!");
@@ -681,7 +686,7 @@ public class MainForm extends javax.swing.JFrame {
                 messageTime = messageRead.split(";")[2];
                 messageCipher = messageRead.split(";")[3];
                 messageHash = messageRead.split(";")[4];
-
+                
                 senderLabel.setText("Sender: " + sender);
                 messageTimeLabel.setText("Time: " + messageTime);
                 messageCipherLabel.setText("Cipher: " + messageCipher);
@@ -696,7 +701,7 @@ public class MainForm extends javax.swing.JFrame {
                 messageCipher = messageRead.split(";")[3];
                 messageHash = messageRead.split(";")[4];
                 messageSourceFile = new File(messageRead.split(";")[5]);
-
+                
                 senderLabel.setText("Sender: " + sender);
                 messageTimeLabel.setText("Time: " + messageTime);
                 messageCipherLabel.setText("Cipher: " + messageCipher);
@@ -713,21 +718,29 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_encryptedFileButtonActionPerformed
 
     private void compileAndRunButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileAndRunButtonActionPerformed
-        if(!messageSourceFile.exists()){
-                JOptionPane.showMessageDialog(this,
-                        "You must first open a message file.");
-            }
-        else{
+        if (!messageSourceFile.exists()) {
+            JOptionPane.showMessageDialog(this,
+                    "You must first open a message file.");
+        } else {
             try {
-                File[] fileToCompile={messageSourceFile};
+                File[] fileToCompile = {messageSourceFile};
                 JavaCodeUtility.compile(fileToCompile);
-                File[] fileToExecute={new File(messageSourceFile.getPath().replace(".java", ""))};
+                File[] fileToExecute = {new File(messageSourceFile.getPath().replace(".java", ""))};
                 JavaCodeUtility.execute(fileToExecute);
             } catch (IOException ex) {
                 Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_compileAndRunButtonActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        int chosenOption = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to exit?",
+                "Exiting", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (chosenOption == JOptionPane.OK_OPTION) {
+            System.exit(0);
+        }
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
