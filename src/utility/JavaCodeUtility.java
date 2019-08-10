@@ -15,17 +15,6 @@ import javax.tools.ToolProvider;
 
 public class JavaCodeUtility {
 
-    public static void main(String args[]) {
-        try {
-            File s[] = {new File("C:\\Users\\pajse\\Desktop\\ree.java")};
-            System.out.println(compile(s));
-            System.out.println(s[0].exists());
-            execute(s[0]);
-        } catch (IOException ex) {
-            Logger.getLogger(JavaCodeUtility.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public static boolean compile(File files[]) throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
