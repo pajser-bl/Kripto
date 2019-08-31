@@ -645,6 +645,8 @@ public class MainForm extends javax.swing.JFrame {
                     "Chosen file is not a java source file!");
         }
         Message.send(Kripto.user, Kripto.passwd.getUser(recipient), hash, cipher, saltLength, sourceFile);
+        JOptionPane.showMessageDialog(this,
+                    "File sent.");
     }//GEN-LAST:event_sendButtonActionPerformed
 
     private void encryptedFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptedFileButtonActionPerformed

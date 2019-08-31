@@ -158,6 +158,14 @@ public class LoginJFrame extends javax.swing.JFrame {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         switch (Kripto.passwd.login(username, password)) {
+            case -7:{
+                infoLabel.setText("User certificate has wrong signature!");
+                break;
+            }
+            case -6:{
+                infoLabel.setText("User certificate tempered!");
+                break;
+            }
             case -5: {
                 infoLabel.setText("User certificate was revoked!");
                 break;

@@ -10,11 +10,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import crypto.hash.HashAlgorithm;
 import java.io.FileNotFoundException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CRLException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
 import java.util.Base64;
 import java.security.cert.X509Certificate;
 
@@ -77,12 +83,13 @@ public class Passwd {
     public ArrayList<User> getUsers() {
         return this.users;
     }
-    
-    public String[] getUsernames(){
-        String[] usernames=new String[this.users.size()];
-        int i=0;
-        for(User user:this.users)
-            usernames[i++]=user.getUsername();
+
+    public String[] getUsernames() {
+        String[] usernames = new String[this.users.size()];
+        int i = 0;
+        for (User user : this.users) {
+            usernames[i++] = user.getUsername();
+        }
         return usernames;
     }
 
@@ -93,16 +100,20 @@ public class Passwd {
         //-4 nije jos vazeci certifikat
         //-5 opozvan certifikat
         //-6 pogresan otisak certifikata
+        //-7 pogresan potpisnik certifikata
         // 0 pogresan password
         // 1 ok
         User user = null;
         X509Certificate cert = null;
+        X509Certificate caCert = null;
+        X509CRL crl = null;
+        X509CRLEntry revoked = null;
         FileInputStream fIS = null;
         if ((user = getUser(username)) == null) {
             return -1;
         }
         String hash = this.sha256.hash(password.concat(user.getSalt()));
-        if (!HashAlgorithm.verify(Base64.getEncoder().encodeToString(hash.getBytes()), user.getHash())) {
+        if (HashAlgorithm.verify(Base64.getEncoder().encodeToString(hash.getBytes()), user.getHash())) {
             if (!new File(user.getCertificatePath()).exists() || !new File(user.getFolderPath()).exists() || !new File(user.getPrivateKeyPath()).exists()) {
                 return -2;
             }
@@ -111,24 +122,36 @@ public class Passwd {
                 cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(fIS);
                 cert.checkValidity();
                 fIS.close();
-                if (!user.getCertificateThumbPrint().equals(Base64.getEncoder().encodeToString(this.sha1.hash(cert.getEncoded())))) {
-                    return -6;
+                fIS = new FileInputStream("ca.crt");
+                caCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(fIS);
+
+//                if () {
+//                    return -6;
+//                }
+                cert.verify(caCert.getPublicKey());
+                fIS = new FileInputStream("crl.pem");
+                crl = (X509CRL) CertificateFactory.getInstance("X.509").generateCRL(fIS);
+                fIS.close();
+                revoked = crl.getRevokedCertificate(cert.getSerialNumber());
+                if (revoked != null) {
+                    return -5;
                 }
+
             } catch (CertificateExpiredException ex) {
                 return -3;
             } catch (CertificateNotYetValidException ex) {
                 return -4;
             } catch (FileNotFoundException ex) {
                 return -2;
-            } catch (java.security.cert.CertificateException | IOException ex) {
+            } catch (java.security.cert.CertificateException | IOException | CRLException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException ex) {
                 Logger.getLogger(Passwd.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SignatureException ex) {
+                return -7;
             }
-            if (false) {
-                return -5;
-            }
-            return 0;
+
+            return 1;
         }
-        return 1;
+        return 0;
     }
 
     public boolean checkUniqueUsername(String username) {
@@ -157,7 +180,6 @@ public class Passwd {
 //            writer.close();
 //        }
 //    }
-
 //    public static void main(String args[]) {
 //        try {
 //            Passwd passwd = new Passwd();
