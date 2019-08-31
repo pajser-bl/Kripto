@@ -43,7 +43,7 @@ public class Passwd {
             this.users = new ArrayList<>();
             this.sha256 = new HashAlgorithm("SHA256");
             this.sha1 = new HashAlgorithm("SHA1");
-            this.passwd = new File("passwd");
+            this.passwd = new File("./passwd");
             if (!this.passwd.exists()) {
                 this.passwd.createNewFile();
             }
@@ -103,6 +103,8 @@ public class Passwd {
         //-7 pogresan potpisnik certifikata
         // 0 pogresan password
         // 1 ok
+        String caPath="./ca.crt";
+        String crlPath="./crl.pem";
         User user = null;
         X509Certificate cert = null;
         X509Certificate caCert = null;
@@ -122,14 +124,14 @@ public class Passwd {
                 cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(fIS);
                 cert.checkValidity();
                 fIS.close();
-                fIS = new FileInputStream("ca.crt");
+                fIS = new FileInputStream(caPath);
                 caCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(fIS);
 
 //                if () {
 //                    return -6;
 //                }
                 cert.verify(caCert.getPublicKey());
-                fIS = new FileInputStream("crl.pem");
+                fIS = new FileInputStream(crlPath);
                 crl = (X509CRL) CertificateFactory.getInstance("X.509").generateCRL(fIS);
                 fIS.close();
                 revoked = crl.getRevokedCertificate(cert.getSerialNumber());
