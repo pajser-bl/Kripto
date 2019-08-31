@@ -217,13 +217,13 @@ public class Message {
             Files.write(new File(sourceFileName).toPath(), new String(decrypted).getBytes(), StandardOpenOption.CREATE);
             return "1;" + sender + ";" + time + ";" + cipher.getAlgorithm() + ";" + hashAlgorithm + ";" + sourceFileName;//all good
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
             return "-3";//file problem
         } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeySpecException | IllegalBlockSizeException |IllegalArgumentException ex) {
-            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
             return "-3";//file problem
         } catch (InvalidKeyException | BadPaddingException ex) {
-            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
             return "-1";//bad private key
         }
     }

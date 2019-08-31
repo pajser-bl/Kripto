@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,7 +34,7 @@ import utility.JavaCodeUtility;
  * @author pajser
  */
 public class MainForm extends javax.swing.JFrame {
-    
+
     static String sourceFileName = "";
     static boolean sourceIsJava = false;
     static File sourceFile = null;
@@ -41,7 +42,7 @@ public class MainForm extends javax.swing.JFrame {
     static String hash = "";
     static int saltLength = 0;
     static String recipient = "";
-    
+
     static File messageFile = null;
     static File messageSourceFile = null;
     static boolean isMessage = false;
@@ -71,7 +72,7 @@ public class MainForm extends javax.swing.JFrame {
             CNLabel.setText("Common name: " + r.get(5).getValue().toString());
             EmailLabel.setText("Email: " + r.get(6).getValue().toString());
             EDLabel.setText("Expiration date: " + new SimpleDateFormat("dd-MM-yyyy").format(Kripto.userCertificate.getNotAfter().getTime()));
-            
+
             String keyUsage = "";
             if (Kripto.userCertificate.getKeyUsage()[0]) {
                 keyUsage += "Digital Signature;";
@@ -101,11 +102,11 @@ public class MainForm extends javax.swing.JFrame {
                 keyUsage += "Decipher Only;";
             }
             KULabel.setText(keyUsage);
-            
+
         } catch (InvalidNameException ex) {
             Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
 
     /**
@@ -643,10 +644,11 @@ public class MainForm extends javax.swing.JFrame {
         if (!sourceIsJava || !sourceFile.exists()) {
             JOptionPane.showMessageDialog(this,
                     "Chosen file is not a java source file!");
-        }
-        Message.send(Kripto.user, Kripto.passwd.getUser(recipient), hash, cipher, saltLength, sourceFile);
-        JOptionPane.showMessageDialog(this,
+        } else {
+            Message.send(Kripto.user, Kripto.passwd.getUser(recipient), hash, cipher, saltLength, sourceFile);
+            JOptionPane.showMessageDialog(this,
                     "File sent.");
+        }
     }//GEN-LAST:event_sendButtonActionPerformed
 
     private void encryptedFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptedFileButtonActionPerformed
@@ -659,68 +661,103 @@ public class MainForm extends javax.swing.JFrame {
             messagePathField.setText(chooser.getSelectedFile().getPath());
             messageFile = chooser.getSelectedFile();
             isMessage = messageFile.getName().endsWith(".message");
-            
+
             if (!isMessage || !messageFile.exists()) {
                 JOptionPane.showMessageDialog(this,
                         "Chosen file is not a valid message file!");
-            }
-            messageRead = Message.read(messageFile, Kripto.user);
+            } else {
+                messageRead = Message.read(messageFile, Kripto.user);
+                //System.out.println(messageRead);
+                if (messageRead.startsWith("-4")) {
+                    JOptionPane.showMessageDialog(this,
+                            "You are not receiver of this message!");
+                    messagePathField.setText("/path");
+                    senderLabel.setText("Sender: ");
+                    messageTimeLabel.setText("Time: ");
+                    messageCipherLabel.setText("Cipher: ");
+                    messageHashLabel.setText("Hash: ");
+                    verificationLabel.setText("");
+                    verificationLabel.setForeground(Color.green);
+                    messageTextArea.setText("CODE PREVIEW");
+                }
+                if (messageRead.startsWith("-3")) {
+                    JOptionPane.showMessageDialog(this,
+                            "Corrupted message file!");
+                    messagePathField.setText("/path");
+                    senderLabel.setText("Sender: ");
+                    messageTimeLabel.setText("Time: ");
+                    messageCipherLabel.setText("Cipher: ");
+                    messageHashLabel.setText("Hash: ");
+                    verificationLabel.setText("");
+                    verificationLabel.setForeground(Color.green);
+                    messageTextArea.setText("CODE PREVIEW");
+                }
+                if (messageRead.startsWith("-2")) {
+                    JOptionPane.showMessageDialog(this,
+                            "Bad message formatting!");
+                    messagePathField.setText("/path");
+                    senderLabel.setText("Sender: ");
+                    messageTimeLabel.setText("Time: ");
+                    messageCipherLabel.setText("Cipher: ");
+                    messageHashLabel.setText("Hash: ");
+                    verificationLabel.setText("");
+                    verificationLabel.setForeground(Color.green);
+                    messageTextArea.setText("CODE PREVIEW");
+                }
+                if (messageRead.startsWith("-1")) {
+                    JOptionPane.showMessageDialog(this,
+                            "Bad private key!Are you sure you are the recipient?!");
+                    messagePathField.setText("/path");
+                    senderLabel.setText("Sender: ");
+                    messageTimeLabel.setText("Time: ");
+                    messageCipherLabel.setText("Cipher: ");
+                    messageHashLabel.setText("Hash: ");
+                    verificationLabel.setText("");
+                    verificationLabel.setForeground(Color.green);
+                    messageTextArea.setText("CODE PREVIEW");
+                }
+                if (messageRead.startsWith("0")) {
+                    sender = messageRead.split(";")[1];
+                    messageTime = messageRead.split(";")[2];
+                    messageCipher = messageRead.split(";")[3];
+                    messageHash = messageRead.split(";")[4];
 
-            //System.out.println(messageRead);
-            if (messageRead.startsWith("-4")) {
-                JOptionPane.showMessageDialog(this,
-                        "You are not receiver of this message!");
-            }
-            if (messageRead.startsWith("-3")) {
-                JOptionPane.showMessageDialog(this,
-                        "Corrupted message file!");
-            }
-            if (messageRead.startsWith("-2")) {
-                JOptionPane.showMessageDialog(this,
-                        "Bad message formatting!");
-            }
-            if (messageRead.startsWith("-1")) {
-                JOptionPane.showMessageDialog(this,
-                        "Bad private key!Are you sure you are the recipient?!");
-            }
-            if (messageRead.startsWith("0")) {
-                sender = messageRead.split(";")[1];
-                messageTime = messageRead.split(";")[2];
-                messageCipher = messageRead.split(";")[3];
-                messageHash = messageRead.split(";")[4];
-                
-                senderLabel.setText("Sender: " + sender);
-                messageTimeLabel.setText("Time: " + messageTime);
-                messageCipherLabel.setText("Cipher: " + messageCipher);
-                messageHashLabel.setText("Hash: " + messageHash);
-                verificationLabel.setText("Verification failed!");
-                verificationLabel.setForeground(Color.red);
-                messageTextArea.setText("FILE POSSIBLY CORRUPT!");
-            }
-            if (messageRead.startsWith("1")) {
-                sender = messageRead.split(";")[1];
-                messageTime = messageRead.split(";")[2];
-                messageCipher = messageRead.split(";")[3];
-                messageHash = messageRead.split(";")[4];
-                messageSourceFile = new File(messageRead.split(";")[5]);
-                
-                senderLabel.setText("Sender: " + sender);
-                messageTimeLabel.setText("Time: " + messageTime);
-                messageCipherLabel.setText("Cipher: " + messageCipher);
-                messageHashLabel.setText("Hash: " + messageHash);
-                verificationLabel.setText("Verification successfull!");
-                verificationLabel.setForeground(Color.green);
-                try {
-                    messageTextArea.setText(new String(Files.readAllBytes(messageSourceFile.toPath())));
-                } catch (IOException ex) {
-                    Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                    senderLabel.setText("Sender: " + sender);
+                    messageTimeLabel.setText("Time: " + messageTime);
+                    messageCipherLabel.setText("Cipher: " + messageCipher);
+                    messageHashLabel.setText("Hash: " + messageHash);
+                    verificationLabel.setText("Verification failed!");
+                    verificationLabel.setForeground(Color.red);
+                    messageTextArea.setText("FILE POSSIBLY CORRUPT!");
+                }
+                if (messageRead.startsWith("1")) {
+                    sender = messageRead.split(";")[1];
+                    messageTime = messageRead.split(";")[2];
+                    messageCipher = messageRead.split(";")[3];
+                    messageHash = messageRead.split(";")[4];
+                    messageSourceFile = new File(messageRead.split(";")[5]);
+
+                    senderLabel.setText("Sender: " + sender);
+                    messageTimeLabel.setText("Time: " + messageTime);
+                    messageCipherLabel.setText("Cipher: " + messageCipher);
+                    messageHashLabel.setText("Hash: " + messageHash);
+                    verificationLabel.setText("Verification successfull!");
+                    verificationLabel.setForeground(Color.green);
+                    try {
+                        messageTextArea.setText(new String(Files.readAllBytes(messageSourceFile.toPath())));
+                    } catch (IOException ex) {
+                        Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
     }//GEN-LAST:event_encryptedFileButtonActionPerformed
 
     private void compileAndRunButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileAndRunButtonActionPerformed
-        if (!messageSourceFile.exists()) {
+        if (messagePathField.getText().equals("/path")) {
+            JOptionPane.showMessageDialog(this,
+                    "You must first open a message file.");
+        } else if (!messageSourceFile.exists()) {
             JOptionPane.showMessageDialog(this,
                     "You must first open a message file.");
         } else {
