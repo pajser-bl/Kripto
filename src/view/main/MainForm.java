@@ -666,8 +666,20 @@ public class MainForm extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this,
                         "Chosen file is not a valid message file!");
             } else {
-                messageRead = Message.read(messageFile, Kripto.user);
+                messageRead = Message.read(messageFile, Kripto.user,Kripto.passwd);
                 //System.out.println(messageRead);
+                if (messageRead.startsWith("-5")) {
+                    JOptionPane.showMessageDialog(this,
+                            "Bad digital signature!");
+                    messagePathField.setText("/path");
+                    senderLabel.setText("Sender: ");
+                    messageTimeLabel.setText("Time: ");
+                    messageCipherLabel.setText("Cipher: ");
+                    messageHashLabel.setText("Hash: ");
+                    verificationLabel.setText("");
+                    verificationLabel.setForeground(Color.green);
+                    messageTextArea.setText("CODE PREVIEW");
+                }
                 if (messageRead.startsWith("-4")) {
                     JOptionPane.showMessageDialog(this,
                             "You are not receiver of this message!");

@@ -1,10 +1,12 @@
 package communication;
 
+import access.Passwd;
 import access.User;
 import crypto.cipher.RSACipher;
 import crypto.cipher.SymmetricCipherAlgorithm;
 import crypto.hash.HashAlgorithm;
 import crypto.hash.SaltMaker;
+import crypto.signer.Signer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -105,6 +108,9 @@ public class Message {
 
             //generate source hash
             byte[] sourceHash = hasher.hash(sourceInBytesBase64);
+            //sign hash
+            PrivateKey senderPrivateKey = RSACipher.readPrivateKey(sender.getPrivateKeyPath());
+            String signedHash = Signer.sign(hashAlgorithm, Base64.getEncoder().encodeToString(sourceHash), senderPrivateKey);
 
             //encrypt source
             byte[] encrypted = cipher.encrypt(key, sourceInBytesBase64Salted);
@@ -130,10 +136,17 @@ public class Message {
             writer.println("-----BEGIN HASH-----");
             writer.println(Base64.getEncoder().encodeToString(sourceHash));
             writer.println("-----END HASH-----");
+            writer.println("-----BEGIN SIGNATURE-----");
+            writer.println(signedHash);
+            writer.println("-----END SIGNATURE-----");
 
             writer.close();
             return true;
         } catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException | CertificateException ex) {
+            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SignatureException ex) {
             Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
@@ -146,13 +159,14 @@ public class Message {
      * @param user
      * @return
      */
-    public static String read(File file, User user) {
+    public static String read(File file, User user, Passwd passwd) {
         // 1:sender:time:cipher:hash OK
         // 0:sender:time:cipher:hash bad hash
         // -1 bad private key
         // -2 bad format
         // -3 exceptions
         // -4 user is not receiver
+        // -5 bad sender signature
         try {
             ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(file.getPath()));
             //format check
@@ -165,7 +179,9 @@ public class Message {
                     || !lines.get(9).equals("-----BEGIN SALT-----")
                     || !lines.get(11).equals("-----END SALT-----")
                     || !lines.get(12).equals("-----BEGIN HASH-----")
-                    || !lines.get(14).equals("-----END HASH-----")) {
+                    || !lines.get(14).equals("-----END HASH-----")
+                    || !lines.get(15).equals("-----BEGIN SIGNATURE-----")
+                    || !lines.get(17).equals("-----END SIGNATURE-----")) {
                 return "-2";//bad format
             }
             //read message info
@@ -203,6 +219,16 @@ public class Message {
 
             //hash
             String hash = lines.get(13);
+            String signature = lines.get(16);
+
+            User messageSender = passwd.getUser(sender);
+            X509Certificate senderCertificate = (X509Certificate) CertificateFactory.getInstance("X509").generateCertificate(new FileInputStream(passwd.getUser(sender).getCertificatePath()));
+            PublicKey senderPublicKey = senderCertificate.getPublicKey();
+
+            if (!Signer.verify(hashAlgorithm, hash, signature, senderPublicKey)) {
+                return "-5";
+            }
+
             String newHash = Base64.getEncoder().encodeToString(hasher.hash(desalted));
             if (!HashAlgorithm.verify(hash, newHash)) {
                 return "0;" + sender + ";" + time + ";" + cipher.getAlgorithm() + ";" + hashAlgorithm;//bad hash
@@ -219,12 +245,15 @@ public class Message {
         } catch (FileNotFoundException ex) {
 //            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
             return "-3";//file problem
-        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeySpecException | IllegalBlockSizeException |IllegalArgumentException ex) {
+        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeySpecException | IllegalBlockSizeException | IllegalArgumentException ex) {
 //            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
             return "-3";//file problem
         } catch (InvalidKeyException | BadPaddingException ex) {
 //            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
             return "-1";//bad private key
+        } catch (CertificateException | SignatureException ex) {
+//            Logger.getLogger(Message.class.getName()).log(Level.SEVERE, null, ex);
+            return "-5";
         }
     }
 
