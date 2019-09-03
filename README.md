@@ -1,6 +1,6 @@
 # Kripto
 
-School project.
+# School project.
 Proof of concept for encrypting, hashing, signing, verifying data during file transfer in imaginery ftp system.
 
 Users:
